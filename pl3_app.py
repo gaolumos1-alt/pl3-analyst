@@ -15,12 +15,12 @@ LOTTERY_TYPE = "pls"  # 排列三的彩种代码
 
 st.set_page_config(page_title="排列三 终极量化终端", page_icon="🏆", layout="wide")
 
-# ================= 体彩竞速风 CSS =================
+# ================= 体彩竞速风 CSS (加固防黑版) =================
 st.markdown("""
 <style>
-    /* 活力橙 + 深邃蓝 背景 */
+    /* 强制全局背景 */
     .stApp {
-        background-color: #f4f6f9;
+        background-color: #f4f6f9 !important;
         background-image: 
             radial-gradient(circle at 10% 10%, rgba(255, 87, 34, 0.1) 0%, transparent 40%),
             radial-gradient(circle at 90% 90%, rgba(26, 35, 126, 0.1) 0%, transparent 40%);
@@ -29,7 +29,31 @@ st.markdown("""
     body, p, h1, h2, h3, h4, h5, h6, div, span { color: #1d1d1f !important; }
     
     /* 侧边栏 */
-    [data-testid="stSidebar"] { background-color: rgba(255, 255, 255, 0.8) !important; backdrop-filter: blur(20px); border-right: 1px solid rgba(0,0,0,0.05); }
+    [data-testid="stSidebar"] { 
+        background-color: #ffffff !important; 
+        border-right: 1px solid #e5e5ea; 
+    }
+    
+    /* 输入框、下拉框、数字输入框防黑加固 */
+    div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .stTextInput input {
+        background-color: #ffffff !important;
+        color: #1d1d1f !important;
+        border-radius: 10px;
+        border: 1px solid #e5e5ea;
+    }
+    /* 下拉菜单弹出层防黑加固 */
+    ul[data-testid="stSelectboxVirtualDropdown"] {
+        background-color: #ffffff !important;
+    }
+    
+    /* 滑块防黑加固 */
+    [data-testid="stSlider"] div { color: #1d1d1f !important; }
+
+    /* 表格防黑加固 */
+    [data-testid="stDataFrame"] { background-color: #ffffff !important; }
+    
+    /* 提示框防黑加固 */
+    .stAlert { background-color: #ffffff !important; border: 1px solid #e5e5ea; }
     
     /* 卡片样式 */
     .apple-card { background-color: #ffffff; border-radius: 12px; padding: 12px 16px; margin-bottom: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); border-left: 4px solid #FF5722; }
@@ -50,7 +74,6 @@ st.markdown("""
     .eval-card { background-color: #ffffff; border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(0,0,0,0.05); border: 1px solid #e5e5ea; }
     .star-text { color: #FF5722 !important; font-size: 24px; }
     
-    div[data-testid="stSelectbox"] > div { background-color: #f5f5f7; border-radius: 10px; border: 1px solid #e5e5ea; }
     .stSelectbox { margin-bottom: -10px; }
     
     @media (max-width: 768px) { [data-testid="column"] { width: 100% !important; flex: 1 1 100% !important; } }
@@ -550,8 +573,9 @@ with col_chart:
     melted_df['x_pos'] = melted_df.apply(lambda r: r['数值'] if r['位置']=='百位' else (r['数值']+12 if r['位置']=='十位' else r['数值']+24), axis=1)
     melted_df['is_pred'] = melted_df['期号简写'] == next_qihao_str
     
-    x_axis = alt.X('x_pos:Q', scale=alt.Scale(domain=[-1, 34]), axis=alt.Axis(values=[0,1,2,3,4,5,6,7,8,9, 12,13,14,15,16,17,18,19,20,21, 24,25,26,27,28,29,30,31,32,33], labelExpr="datum.value < 10 ? datum.value : (datum.value < 22 ? datum.value - 12 : datum.value - 24)", title="号码（百位 | 十位 | 个位）"))
-    y_axis = alt.Y('期号简写:N', sort=chart_data['期号简写'].tolist(), axis=alt.Axis(labelAngle=0, labelOverlap=False))
+    # 图表颜色强制设定
+    x_axis = alt.X('x_pos:Q', scale=alt.Scale(domain=[-1, 34]), axis=alt.Axis(values=[0,1,2,3,4,5,6,7,8,9, 12,13,14,15,16,17,18,19,20,21, 24,25,26,27,28,29,30,31,32,33], labelExpr="datum.value < 10 ? datum.value : (datum.value < 22 ? datum.value - 12 : datum.value - 24)", title="号码（百位 | 十位 | 个位）", labelColor='#1d1d1f', titleColor='#1d1d1f'))
+    y_axis = alt.Y('期号简写:N', sort=chart_data['期号简写'].tolist(), axis=alt.Axis(labelAngle=0, labelOverlap=False, labelColor='#1d1d1f'))
     
     line_chart = alt.Chart(melted_df[~melted_df['is_pred']]).mark_line(point=alt.OverlayMarkDef(size=40, filled=True, stroke='white', strokeWidth=2), strokeWidth=2).encode(x=x_axis, y=y_axis, color=alt.Color('位置:N', scale=alt.Scale(domain=['百位', '十位', '个位'], range=['#FF5722', '#1A237E', '#4CAF50'])), tooltip=['期号简写', '位置', '数值'])
     connect_df = melted_df[melted_df['期号简写'].isin([chart_data.iloc[-2]["期号简写"], next_qihao_str])]
